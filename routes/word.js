@@ -4,6 +4,12 @@ const wordController = require('../controllers/word.controller');
 const { check } = require('express-validator');
 const auth = require('../middleware/auth');
 
+// @route   GET api/words
+// @desc    Get all words
+// @access  Public
+// Route to get words (with optional category and difficulty filter)
+router.get('/', wordController.getWords);
+
 // @route   POST api/words
 // @desc    Add new word
 // @access  Private
