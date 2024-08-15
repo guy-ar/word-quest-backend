@@ -6,16 +6,13 @@ const auth = require('../middleware/auth');
 
 // @route   POST api/users/register-user
 // @desc    Register new user
-// @access  private
+// @access  public
 router.post(
     '/register-user',
     [
-        auth,
-        [
-            check('username', 'Username is required').not().isEmpty(),
-            check('email', 'Please include a valid email').isEmail(),
-            check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
-        ]
+        check('username', 'Username is required').not().isEmpty(),
+        check('email', 'Please include a valid email').isEmail(),
+        check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
     ],
     userController.registerUser
 );

@@ -7,7 +7,7 @@ const usersSchema = require('../models/user.model');
 exports.login = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    return res.status(400).json({ success: false, message:'failure', errors: errors.array() });
   }
 
   const { email, password } = req.body;
@@ -27,7 +27,7 @@ exports.login = async (req, res) => {
 
     if (!user) {
       console.log('No user found');
-      return res.status(401).json({ msg: 'Invalid Credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid Credentials' });
     }
 
     console.log('User found, ID:', user._id);
@@ -52,7 +52,7 @@ exports.login = async (req, res) => {
 
     if (!isMatchOriginal && !isMatchString) {
       console.log('Password does not match');
-      return res.status(401).json({ msg: 'Invalid Credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid Credentials' });
     }
 
     const payload = {
@@ -67,21 +67,21 @@ exports.login = async (req, res) => {
       { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({success: true, token: token });
       }
     );
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send({success: false, message:'Server Error'});
   }
 };
 
 exports.getUser = async (req, res) => {
   try {
     const user = await usersSchema.findById(req.user.id).select('-password');
-    res.json(user);
+    res.json({success: true, user: user});
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send({success: false, message:'Server Error'});
   }
 };

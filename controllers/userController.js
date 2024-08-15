@@ -8,7 +8,7 @@ const sendEmail = require('../utils/sendEmail');
 exports.registerUser = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({success: false,  errors: errors.array() });
     }
 
     const { username, email, password } = req.body;
@@ -18,10 +18,10 @@ exports.registerUser = async (req, res) => {
         let existingUser = await UserSchema.findOne({ $or: [{ email }, { username }] });
         if (existingUser) {
             if (existingUser.email === email) {
-                return res.status(400).json({ msg: 'Email already in use' });
+                return res.status(400).json({ success: false, message: 'Email already in use' });
             }
             if (existingUser.username === username) {
-                return res.status(400).json({ msg: 'Username already taken' });
+                return res.status(400).json({ success: false, message: 'Username already taken' });
             }
         }
 
@@ -45,7 +45,8 @@ exports.registerUser = async (req, res) => {
 
         // Return success response
         res.status(201).json({
-            msg: 'User registered successfully',
+            success: true, 
+            message: 'User registered successfully',
             user: {
                 id: savedUser.id,
                 username: savedUser.username,
@@ -59,19 +60,19 @@ exports.registerUser = async (req, res) => {
         // Check for specific MongoDB errors
         if (error.name === 'MongoError') {
             if (error.code === 11000) { // Duplicate key error
-                return res.status(400).json({ msg: 'User with that email or username already exists' });
+                return res.status(400).json({ success: false, message: 'User with that email or username already exists' });
             }
         }
         
         // For any other errors
-        res.status(500).json({ msg: 'Server Error', error: error.message });
+        res.status(500).json({ succecess: false, message:'Server Error', error: error.message });
     }
 };
 
 exports.changePassword = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ succecess: false, errors: errors.array() });
     }
 
     const { currentPassword, newPassword } = req.body;
@@ -79,27 +80,27 @@ exports.changePassword = async (req, res) => {
         const user = await UserSchema.findById(req.user.id).select('+password');
 
         if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
+            return res.status(404).json({ succecess: false, message: 'User not found' });
         }
   
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
-            return res.status(400).json({ msg: 'Current password is incorrect' });
+            return res.status(400).json({ succecess: false, message: 'Current password is incorrect' });
         }
   
         // Check if new password meets complexity requirements
         if (newPassword.length < 6) {
-            return res.status(400).json({ msg: 'New password must be at least 6 characters long' });
+            return res.status(400).json({ succecess: false, message: 'New password must be at least 6 characters long' });
         }
 
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
         await user.save();
   
-        res.json({ msg: 'Password updated successfully' });
+        res.json({ succecess: true, message: 'Password updated successfully' });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).send({succecess: false, message:'Server Error'});
     }
 };
 
@@ -110,7 +111,7 @@ exports.requestPasswordReset = async (req, res) => {
         const user = await UserSchema.findOne({ email });
 
         if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
+            return res.status(404).json({ succecess: false, message: 'User not found' });
         }
 
         // Generate reset token
@@ -143,11 +144,11 @@ exports.requestPasswordReset = async (req, res) => {
 
             await user.save();
 
-            return res.status(500).json({ msg: 'Email could not be sent' });
+            return res.status(500).json({ succecess: false, message: 'Email could not be sent' });
         }
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).send({succecess: false, message:'Server Error'});
     }
 };
 
@@ -165,7 +166,7 @@ exports.resetPassword = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(400).json({ msg: 'Invalid token' });
+            return res.status(400).json({ succecess: false, message: 'Invalid token' });
         }
 
         // Set new password
