@@ -16,6 +16,7 @@ app.use(cors());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/user'));
 app.use('/api/words', require('./routes/word'));
+app.use('/api/gameResults', require('./routes/gameResult'));
 //app.use('/api/games', require('./routes/games'));
 const { MongoClient } = require('mongodb');
 // Connection URL

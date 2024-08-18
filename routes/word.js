@@ -13,7 +13,7 @@ router.get(
      wordController.getWords
     );
 
-// @route   POST api/words
+// @route   POST api/words/add
 // @desc    Add new word
 // @access  Private
 router.post(
@@ -34,8 +34,17 @@ router.post(
 // @route   POST api/words/upload
 // @desc    Upload words from JSON file
 // @access  Private
-router.post('/upload', 
+router.post(
+    '/upload', 
     auth, 
     wordController.uploadWords);
+
+// @route   GET api/words/random
+// @desc    Get random words with optional filters
+// @access  Public
+router.get(
+    '/random', 
+    auth, 
+    wordController.getRandomWords);
 
 module.exports = router;

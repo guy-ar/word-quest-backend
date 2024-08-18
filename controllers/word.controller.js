@@ -66,6 +66,44 @@ exports.getWords = async (req, res) => {
     }
   };
 
+  exports.getRandomWords = async (req, res) => {
+    try {
+      const { category, difficulty, quantity } = req.query;
+      let query = {};
+  
+      // If category is provided, add it to the query
+      if (category) {
+        query.category = category;
+      }
+  
+      // If difficulty is provided, add it to the query
+      if (difficulty) {
+        query.difficulty = parseInt(difficulty);
+      }
+
+      // Convert quantity to a number, default to 10 if not provided or invalid
+      const limit = parseInt(quantity) || 20;
+  console.log("limit", limit)
+      // Fetch words based on the query, limit, and randomize
+      const words = await Word.aggregate([
+        { $match: query },
+        { $sample: { size: limit } },
+        { $project: { __v: 0 } }
+      ]);
+  
+      res.status(200).json({
+        success: true,
+        message: 'Random words fetched successfully',
+        count: words.length,
+        words: words
+      });
+    } catch (error) {
+      console.error('Error fetching random words:', error);
+      res.status(500).json({ success: false, message: 'Error fetching random words', error: error.message });
+    }
+  };
+  
+
   exports.uploadWords = [
     upload.single('wordsFile'),
     async (req, res) => {
