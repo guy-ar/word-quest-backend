@@ -83,7 +83,7 @@ exports.getWords = async (req, res) => {
 
       // Convert quantity to a number, default to 10 if not provided or invalid
       const limit = parseInt(quantity) || 20;
-  console.log("limit", limit)
+  
       // Fetch words based on the query, limit, and randomize
       const words = await Word.aggregate([
         { $match: query },
@@ -169,3 +169,116 @@ exports.getWords = async (req, res) => {
     }
   }
 ];
+
+// In word.controller.js, add this new function:
+exports.getCategories = async (req, res) => {
+  try {
+    // Use distinct to get unique categories
+    const categories = await Word.distinct('category');
+    
+    res.status(200).json({
+      success: true,
+      message: 'Categories fetched successfully',
+      count: categories.length,
+      categories: categories
+    });
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error fetching categories', 
+      error: error.message 
+    });
+  }
+};
+
+// In word.controller.js, add these new functions:
+
+// Get a single word by ID
+exports.getWord = async (req, res) => {
+  try {
+    const wordId = req.params.id;
+    
+    const word = await Word.findById(wordId).select('-__v');
+    
+    if (!word) {
+      return res.status(404).json({
+        success: false,
+        message: 'Word not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Word fetched successfully',
+      word: word
+    });
+  } catch (error) {
+    console.error('Error fetching word:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error fetching word', 
+      error: error.message 
+    });
+  }
+};
+
+// Update a word
+exports.updateWord = async (req, res) => {
+  try {
+    const wordId = req.params.id;
+    const { englishWord, translations, difficulty, category } = req.body;
+
+    // Validate input
+    if (!englishWord || !translations || translations.length !== 4 || !difficulty || !category) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'All fields are required and translations must have exactly 4 items' 
+      });
+    }
+
+    // Check if the updated englishWord already exists for a different word
+    const existingWord = await Word.findOne({ 
+      englishWord, 
+      _id: { $ne: wordId } 
+    });
+    
+    if (existingWord) {
+      return res.status(409).json({ 
+        success: false, 
+        message: 'This English word already exists for another entry' 
+      });
+    }
+
+    const updatedWord = await Word.findByIdAndUpdate(
+      wordId,
+      {
+        englishWord,
+        translations,
+        difficulty,
+        category
+      },
+      { new: true, runValidators: true }
+    ).select('-__v');
+
+    if (!updatedWord) {
+      return res.status(404).json({
+        success: false,
+        message: 'Word not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Word updated successfully',
+      word: updatedWord
+    });
+  } catch (error) {
+    console.error('Error updating word:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error updating word', 
+      error: error.message 
+    });
+  }
+};

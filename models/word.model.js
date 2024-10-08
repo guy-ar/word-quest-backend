@@ -25,7 +25,7 @@ const wordSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 1,
-    max: 3
+    max: 99
   },
   category: {
     type: String,

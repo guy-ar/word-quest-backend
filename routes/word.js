@@ -24,7 +24,7 @@ router.post(
         //check('definition', 'Definition is required').not().isEmpty()
         check('englishWord', 'English word is required').not().isEmpty(),
         check('translations', 'Translations are required').isArray({ min: 4, max: 4 }),
-        check('difficulty', 'Difficulty is required').isInt({ min: 1, max: 3 }),
+        check('difficulty', 'Difficulty is required').isInt({ min: 1, max: 99 }),
         check('category', 'Category is required').not().isEmpty()
         ],
         auth
@@ -46,5 +46,35 @@ router.get(
     '/random', 
     auth, 
     wordController.getRandomWords);
+
+// @route   GET api/words/categories
+// @desc    Get all unique categories
+// @access  Public
+router.get(
+    '/categories', 
+    wordController.getCategories);
+
+
+// @route   GET api/words/:id
+// @desc    Get a single word by ID
+// @access  Public
+router.get('/:id', wordController.getWord);
+
+// @route   PUT api/words/:id
+// @desc    Update a word
+// @access  Private
+router.put(
+  '/:id',
+  [
+    [
+      check('englishWord', 'English word is required').not().isEmpty(),
+      check('translations', 'Translations are required').isArray({ min: 4, max: 4 }),
+      check('difficulty', 'Difficulty is required').isInt({ min: 1, max: 99 }),
+      check('category', 'Category is required').not().isEmpty()
+    ],
+    auth
+  ],
+  wordController.updateWord
+);
 
 module.exports = router;

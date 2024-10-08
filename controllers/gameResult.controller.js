@@ -45,4 +45,45 @@ const Word = require('../models/word.model');
     }
   }
 
+  exports.getTopResults = async (req, res) => {
+    try {
+      const { quantity } = req.query;
+      const limit = parseInt(quantity) || 10;
+
+      const topResults = await GameResult.aggregate([
+        {
+          $sort: { score: -1 }
+        },
+        {
+          $limit: limit
+        },
+        {
+          $lookup: {
+            from: 'users',  // Assuming your User model is stored in a 'users' collection
+            localField: 'user',
+            foreignField: '_id',
+            as: 'userDetails'
+          }
+        },
+        {
+          $unwind: '$userDetails'
+        },
+        {
+          $project: {
+            userName: '$userDetails.username',  // Assuming the user's name field is 'name'
+            score: 1,
+            totalWords: 1,
+            correctWords: 1,
+            createdAt: 1  // Assuming you want to include the date/time of the game
+          }
+        }
+      ]);
+  
+      res.status(200).json({ success: true, topResults });
+    } catch (error) {
+      console.error('Error in getTopResults:', error);
+      res.status(500).json({ success: false, message: 'Error fetching top results', error: error.message });
+    }
+  }
+
   // You can add more controller methods here as needed

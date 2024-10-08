@@ -9,7 +9,11 @@ const auth = require('../middleware/auth');
 // @desc    Get 10 best results
 // @access  Public
 // Route to get best results order by score
-// TBD
+router.get(
+    '/topResults',
+    auth, 
+    gameResultController.getTopResults
+    );
 
 // @route   GET api/gameResults/user
 // @desc    Get results for user with email
