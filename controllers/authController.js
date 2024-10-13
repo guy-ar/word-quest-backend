@@ -67,7 +67,7 @@ exports.login = async (req, res) => {
       { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
-        res.json({success: true, token: token });
+        res.json({success: true, token: token, userName: user.username});
       }
     );
   } catch (err) {
